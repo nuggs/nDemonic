@@ -1,8 +1,4 @@
 ﻿--[[
-	Hopefully, this is a little cleaner.
-	This should fix the problem with it showing as on cooldown
-	whenever you're on the gcd.
-
 	Shamelessly borrowed ideas on how to go about doing this.
 	Please check the readme file as there may be some important
 	information.  :)
