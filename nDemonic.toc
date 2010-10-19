@@ -1,0 +1,9 @@
+## Interface: 40000
+## Title: nDemonic
+## Author: Nuggs
+## Version: 0.1.4
+## Notes: Are we in range of demonic circle?
+## DefaultState: Enabled
+## LoadOnDemand: 0
+## SavedVariables: nDemonic_Options
+nDemonic.lua

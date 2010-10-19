@@ -1,0 +1,33 @@
+09/22/2010
+	Added a check for Glyph of Demonic Circle(I'm bad).
+	Adjusted the code for the changes coming in Cataclysm.
+
+09/20/2010
+	Added draggable frame
+	Added slash commands ndemonic lock and unlock
+	base icon flashing when cooldown is up implemented(not included)
+	Cooldown display partially implemented, not included.
+
+03/18/2010
+	Version changed to 0.1.1
+	Forgot to remove pointless comments.  Bumping version.  :)
+	Bumped the version to 0.1.0
+	
+03/14/2010
+	Most of the code went through a pretty major rewrite.
+	We now clear our portal when we die or change zones.
+	The portal no longer gets displayed as on cooldown when gcd is triggered
+	The only localization issues should be my nMessage text.
+	We now check COMBAT_LOG_EVENT_UNFILTERED for teleport/summon.
+	We no longer write the message to the frame each update(lol).
+
+03/05/2010
+	Added a function to disable the UI if you're not a warlock
+	Fixed a memory leak if you're not a warlock and the addon is active.
+	Further worked on reducing memory usage.
+
+02/24/2010
+	Added a change log
+	Cleaned up code to reduce the amount of lines to reduce the file size.
+	Stripped out comments to reduce file size.
+	Started work on adding a marker to the minimap(lol).
