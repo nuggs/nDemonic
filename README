@@ -1,0 +1,17 @@
+--- SETUP ---
+Easy peasy.  Use /ndemonic
+Options are lock and unlock.  That's it.  :D
+
+--- CREDITS AND OTHER INFORMATION ---
+Still my first AddOn and still learning Lua so I'm always open to suggestions.
+I'm trying to keep this as light weight as possible. 
+
+If you don't like my coding style, oh well.  I've developed my own style and
+I've used it for over ten years.  It's not changing now.  :)
+
+The following people I've at least looked at their code and how they did things.  
+
+WoWWiki(lol)
+Tukz - http://www.tukui.org
+Nightcracker - not sure
+Kjado - not sure
