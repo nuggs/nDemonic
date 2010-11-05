@@ -1,3 +1,6 @@
+11/04/2010
+	Fixed the cooldown time(Again).  Blizzard keeps adjusting the time on me.
+
 09/22/2010
 	Added a check for Glyph of Demonic Circle(I'm bad).
 	Adjusted the code for the changes coming in Cataclysm.

@@ -137,10 +137,10 @@ function nDemonic:COMBAT_LOG_EVENT_UNFILTERED(...)
 	if ((select(4, ...) == UnitName("player")) and (select(2, ...) == "SPELL_CAST_SUCCESS") and (select(10, ...) == nTeleport)) then
 		for i = 1, GetNumGlyphSockets() do
 			if (select(3, GetGlyphSocketInfo(i)) == 63309) then
-				nDemonic_SpellInfo.nCooldown = time() + 21; -- 21 seconds since we have the glyph(It's bugged on live atm.)
+				nDemonic_SpellInfo.nCooldown = time() + 26; -- 26 seconds since we have the glyph
 				break
 			else
-				nDemonic_SpellInfo.nCooldown = time() + 25; -- 25 seconds unglyphed
+				nDemonic_SpellInfo.nCooldown = time() + 30; -- 30 seconds unglyphed
 			end
 		end
 		nDemonic_SetMessage(2);
