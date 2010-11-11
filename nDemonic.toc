@@ -6,4 +6,5 @@
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
 ## SavedVariables: nDemonic_Options
+## OptionalDeps: Tukui
 nDemonic.lua

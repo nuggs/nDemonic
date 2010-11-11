@@ -44,18 +44,35 @@ local function nDemonic_InRange()
 	end
 end
 
+local function nDemonic_GetTukui()
+	if (IsAddOnLoaded("Tukui") and nDemonic_Options.tukui == 1) then
+		return true
+	else
+		return false
+	end
+end
+
 local nDemonic = CreateFrame("Frame", "nDemonic", UIParent)
 nDemonic:SetWidth(200)
 nDemonic:SetHeight(22)
 
-local nDemonicTexture = nDemonic:CreateTexture(nil, "BACKGROUND")
-nDemonicTexture:SetTexture(nil)
-nDemonicTexture:SetAllPoints(nDemonic)
-nDemonic.texture = nDemonicTexture
-
 local nDemonicText = nDemonic:CreateFontString(nDemonic, "ARTWORK", "GameFontNormal")
-nDemonicText:SetAllPoints(nDemonic)
-nDemonicText:SetFont("Interface\\AddOns\\nDemonic\\Fonts\\times_new_yorker.ttf", 14, "OUTLINE")
+
+local function nDemonic_CreateTexture()
+	if (nDemonic_GetTukui() == false) then
+		nDemonicTexture = nDemonic:CreateTexture(nil, "BACKGROUND")
+		nDemonicTexture:SetTexture(nil)
+		nDemonicTexture:SetAllPoints(nDemonic)
+		nDemonic.texture = nDemonicTexture
+		nDemonicText:SetAllPoints(nDemonic)
+		nDemonicText:SetFont("Interface\\AddOns\\nDemonic\\Fonts\\times_new_yorker.ttf", 14, "OUTLINE")
+	else
+		nDemonicPanel = CreateFrame("Frame", "nDemonicPanel", TukuiMinimapStatsLeft)
+		TukuiDB.CreatePanel(nDemonicPanel, 148, TukuiDB.Scale(19), "TOPLEFT", TukuiMinimapStatsLeft, "BOTTOMLEFT", 0, TukuiDB.Scale(-3))
+		nDemonicText:SetAllPoints(nDemonicPanel)
+		nDemonicPanel:Hide()
+	end
+end
 
 local function nDemonic_SetMessage(MessageType)
 	if (MessageType == 2) then -- On cooldown
@@ -79,14 +96,18 @@ local function nDemonic_Lock()
 	nDemonic:SetMovable(false);
 	nDemonic:EnableMouse(false);
 	nDemonic_SpellInfo.nLocked = true;
-	nDemonicTexture:SetTexture(nil);
+	if (nDemonic_GetTukui() == false) then
+		nDemonicTexture:SetTexture(nil);
+	end
 	DEFAULT_CHAT_FRAME:AddMessage("nDemonic: Locked.");
 end
 
 local function nDemonic_Unlock()
 	nDemonic:SetMovable(true); nDemonic:EnableMouse(true);
 	nDemonic_SpellInfo.nLocked = false;
-	nDemonicTexture:SetTexture(0, 0, 1, .5);
+	if (nDemonic_GetTukui() == false) then
+		nDemonicTexture:SetTexture(0, 0, 1, .5);
+	end
 	DEFAULT_CHAT_FRAME:AddMessage("nDemonic: Unlocked");
 end
 
@@ -95,10 +116,21 @@ local function nDemonic_Clear()
 	nDemonic_SpellInfo.nFinished = 0;
 	nDemonic_SetMessage(3);
 	nDemonic:Hide();
+	if (nDemonic_GetTukui()) then
+		nDemonicPanel:Hide()
+	end
 end
 
 function nDemonic:ADDON_LOADED(name)
 	if (name == "nDemonic") then
+		if (nDemonic_Options.tukui == nil) then
+			if (IsAddOnLoaded("Tukui")) then
+				nDemonic_Options.tukui = 1;
+			else
+				nDemonic_Optuins.tukui = 0;
+			end
+		end
+
 		if (nDemonic_Options.x == nil) then
 			nDemonic_Options.x = 0;
 		end
@@ -110,6 +142,7 @@ function nDemonic:ADDON_LOADED(name)
 		if (nDemonic_Options.Anchor == nil) then
 			nDemonic_Options.Anchor = "CENTER";
 		end
+		nDemonic_CreateTexture()
 		nDemonic:ClearAllPoints()
 		nDemonic:SetPoint(nDemonic_Options.Anchor, nDemonic_Options.x, nDemonic_Options.y)
 		nDemonic:SetToplevel(true)
@@ -133,6 +166,9 @@ function nDemonic:COMBAT_LOG_EVENT_UNFILTERED(...)
 		nDemonic_SpellInfo.nFinished = time() + 360; -- Six minutes
 		nDemonic_SetMessage(0);
 		nDemonic:Show();
+		if (nDemonic_GetTukui() == true) then
+			nDemonicPanel:Show()
+		end
 	end
 	if ((select(4, ...) == UnitName("player")) and (select(2, ...) == "SPELL_CAST_SUCCESS") and (select(10, ...) == nTeleport)) then
 		for i = 1, GetNumGlyphSockets() do
@@ -188,6 +224,12 @@ SlashCmdList['NDEMONIC'] = function(arg)
 		nDemonic_Lock();
 	elseif (arg == 'unlock') then
 		nDemonic_Unlock();
+	elseif (arg == 'tukui') then
+		if (nDemonic_Options.tukui == 0) then
+			nDemonic_Options.tukui = 1;
+		else
+			nDemonic_Options.tukui = 0;
+		end
 	else
 		DEFAULT_CHAT_FRAME:AddMessage("nDemonic: Options are lock and unlock.");
 	end
