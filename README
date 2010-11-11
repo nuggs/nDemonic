@@ -1,6 +1,23 @@
+--- INSTALL ---
+Just place the addon into your World of Warcraft/Interface/AddOns directory
+and that's about it.
+
+If you downloaded from github, rename the folder to "nDemonic".  Default
+will look something like, "nuggs-nDemonic-f34fe79".
+
 --- SETUP ---
 Easy peasy.  Use /ndemonic
 Options are lock and unlock.  That's it.  :D
+
+To enable TukUI support, you must have TukUI installed, if so,
+it will be automatically detected and enabled upon installation.
+If you want to go back to the old style you can use:
+/ndemonic tukui
+
+this will disable tukui support AFTER you /reload your user interface.
+
+Currently, you can't move the mod while tukui is installed, it only works
+with tukui support disabled.  I plan to fix this in a later installment.
 
 --- CREDITS AND OTHER INFORMATION ---
 Still my first AddOn and still learning Lua so I'm always open to suggestions.
