@@ -1,3 +1,13 @@
+10/18/2011
+	Fixed COMBAT_LOG_EVENT_UNFILTERED to have the correct arguments for 4.2.
+	Changed a few if statements in COMBAT_LOG_EVENT_UNFILTERED
+	Added nDemonic_SetCooldown(duration), checks for glyph then sets the cooldown duration.
+	Added nDemonic_TukInit(), checks for tukui then sets the options accordingly.
+	Added new help display with more information and better formatting.
+	Added reset option to return nDemonic back to it's default state, incomplete.
+	Remove Tukui frames/panels.  Started using new v13 API, incomplete.
+	Changed OnUpdate function to throttle itself.  Might revert back if I don't notice a performance boost.
+
 11/11/2010
 	Added TukUI support.  Visit http://www.tukui.org for information on TukUI
 

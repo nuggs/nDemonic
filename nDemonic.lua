@@ -6,8 +6,11 @@
 	Still a simple script and still released in public domain.
 	Nuggs
 ]]--
+NDEMONIC_VERSION = "0.1.7"
 
 nDemonic_Options = {};
+local nDemonic_TimeSinceLastUpdate = 0;
+local nDemonic_UpdateInterval = 0.2;
 
 local function nDemonic_Disable()
 	DisableAddOn("nDemonic");
@@ -21,6 +24,7 @@ StaticPopupDialogs["DISABLE_NDEMONIC"] = {
 
 local nTeleport = GetSpellInfo(48020);
 local nSummon = GetSpellInfo(48018);
+local T, C, L;
 
 local nDemonic_SpellInfo = {
 	nActive			= false,	-- do we have a portal up
@@ -29,9 +33,6 @@ local nDemonic_SpellInfo = {
 	nMessage		= nil,		-- message to display, don't change
 	nDispText		= true,		-- display text message(Icon or text must be true)
 	nLocked			= true		-- Is the frame locked?
-	--nDispIcon		= false,	-- Display an icon(Not implemented)
-	--nDispCooldown	= false,	-- Display the cooldown(Not Implemented)
-	--nDispPopup		= false		-- Display a popup when it's ready(Not implemented)
 };
 
 local function nDemonic_InRange()
@@ -59,19 +60,22 @@ nDemonic:SetHeight(22)
 local nDemonicText = nDemonic:CreateFontString(nDemonic, "ARTWORK", "GameFontNormal")
 
 local function nDemonic_CreateTexture()
-	if (nDemonic_GetTukui() == false) then
-		nDemonicTexture = nDemonic:CreateTexture(nil, "BACKGROUND")
-		nDemonicTexture:SetTexture(nil)
-		nDemonicTexture:SetAllPoints(nDemonic)
-		nDemonic.texture = nDemonicTexture
-		nDemonicText:SetAllPoints(nDemonic)
-		nDemonicText:SetFont("Interface\\AddOns\\nDemonic\\Fonts\\times_new_yorker.ttf", 14, "OUTLINE")
-	else
-		nDemonicPanel = CreateFrame("Frame", "nDemonicPanel", TukuiMinimapStatsLeft)
-		TukuiDB.CreatePanel(nDemonicPanel, 148, TukuiDB.Scale(19), "TOPLEFT", TukuiMinimapStatsLeft, "BOTTOMLEFT", 0, TukuiDB.Scale(-3))
-		nDemonicText:SetAllPoints(nDemonicPanel)
-		nDemonicPanel:Hide()
+	nDemonicTexture = nDemonic:CreateTexture(nil, "BACKGROUND")
+	nDemonicTexture:SetTexture(nil)
+	nDemonicTexture:SetAllPoints(nDemonic)
+	nDemonic.texture = nDemonicTexture
+	nDemonicText:SetAllPoints(nDemonic)
+	nDemonicText:SetFont("Interface\\AddOns\\nDemonic\\Fonts\\times_new_yorker.ttf", 14, "OUTLINE")
+end
+
+-- Set the cooldown and adjust it if we have it glyphed.
+local function nDemonic_SetCooldown(duration)
+	for i = 1, GetNumGlyphSockets() do
+		if (select(4, GetGlyphSocketInfo(i)) == 63309) then
+			duration = duration - 4;
+		end
 	end
+	nDemonic_SpellInfo.nCooldown = time() + duration;
 end
 
 local function nDemonic_SetMessage(MessageType)
@@ -96,19 +100,15 @@ local function nDemonic_Lock()
 	nDemonic:SetMovable(false);
 	nDemonic:EnableMouse(false);
 	nDemonic_SpellInfo.nLocked = true;
-	if (nDemonic_GetTukui() == false) then
-		nDemonicTexture:SetTexture(nil);
-	end
-	DEFAULT_CHAT_FRAME:AddMessage("nDemonic: Locked.");
+	nDemonicTexture:SetTexture(nil);
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF008B8BnDemonic: |cff00fffflocked|r");
 end
 
 local function nDemonic_Unlock()
 	nDemonic:SetMovable(true); nDemonic:EnableMouse(true);
 	nDemonic_SpellInfo.nLocked = false;
-	if (nDemonic_GetTukui() == false) then
-		nDemonicTexture:SetTexture(0, 0, 1, .5);
-	end
-	DEFAULT_CHAT_FRAME:AddMessage("nDemonic: Unlocked");
+	nDemonicTexture:SetTexture(0, 0, 1, .5);
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF008B8BnDemonic: |cff00ffffunlocked|r");
 end
 
 local function nDemonic_Clear()
@@ -116,21 +116,25 @@ local function nDemonic_Clear()
 	nDemonic_SpellInfo.nFinished = 0;
 	nDemonic_SetMessage(3);
 	nDemonic:Hide();
-	if (nDemonic_GetTukui()) then
-		nDemonicPanel:Hide()
+end
+
+local function nDemonic_Reset()
+	DEFAULT_CHAT_FRAME:AddMessage("|cFF008B8BnDemonic: |cff00ffffreset|r");
+end
+
+local function nDemonic_TukInit()
+	if (IsAddOnLoaded("Tukui") and nDemonic_Options.tukui == 1 or nDemonic_Options.tukui ==  nil) then
+		T, C, L = unpack(Tukui);
+
+		if (nDemonic_Options.tukui == nil) then T.Delay(3, function() print("nDemonic: Tukui support automatically enabled.") end) end
+		nDemonic_Options.tukui = 1;
+	else
+		nDemonic_Options.tukui = 0;
 	end
 end
 
 function nDemonic:ADDON_LOADED(name)
 	if (name == "nDemonic") then
-		if (nDemonic_Options.tukui == nil) then
-			if (IsAddOnLoaded("Tukui")) then
-				nDemonic_Options.tukui = 1;
-			else
-				nDemonic_Optuins.tukui = 0;
-			end
-		end
-
 		if (nDemonic_Options.x == nil) then
 			nDemonic_Options.x = 0;
 		end
@@ -142,10 +146,10 @@ function nDemonic:ADDON_LOADED(name)
 		if (nDemonic_Options.Anchor == nil) then
 			nDemonic_Options.Anchor = "CENTER";
 		end
-		nDemonic_CreateTexture()
-		nDemonic:ClearAllPoints()
-		nDemonic:SetPoint(nDemonic_Options.Anchor, nDemonic_Options.x, nDemonic_Options.y)
-		nDemonic:SetToplevel(true)
+		nDemonic_CreateTexture();
+		nDemonic:ClearAllPoints();
+		nDemonic:SetPoint(nDemonic_Options.Anchor, nDemonic_Options.x, nDemonic_Options.y);
+		nDemonic:SetToplevel(true);
 	end
 end
 
@@ -154,6 +158,7 @@ function nDemonic:PLAYER_LOGIN()
 		nDemonic:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 		nDemonic:RegisterEvent("PLAYER_DEAD");
 		nDemonic:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+		nDemonic_TukInit();
 	else
 		StaticPopup_Show("DISABLE_NDEMONIC");
 	end
@@ -161,24 +166,16 @@ function nDemonic:PLAYER_LOGIN()
 end
 
 function nDemonic:COMBAT_LOG_EVENT_UNFILTERED(...)
-	if ((select(4, ...) == UnitName("player")) and (select(2, ...) == "SPELL_CREATE") and (select(10, ...) == nSummon)) then
+	local _, eventType, _, guid, _, _, _, _, _, _, _, _, spellName = ...
+
+	if (guid == UnitGUID("player") and eventType == "SPELL_CREATE" and spellName == nSummon) then
 		nDemonic_SpellInfo.nActive = true;
 		nDemonic_SpellInfo.nFinished = time() + 360; -- Six minutes
 		nDemonic_SetMessage(0);
 		nDemonic:Show();
-		if (nDemonic_GetTukui() == true) then
-			nDemonicPanel:Show()
-		end
 	end
-	if ((select(4, ...) == UnitName("player")) and (select(2, ...) == "SPELL_CAST_SUCCESS") and (select(10, ...) == nTeleport)) then
-		for i = 1, GetNumGlyphSockets() do
-			if (select(3, GetGlyphSocketInfo(i)) == 63309) then
-				nDemonic_SpellInfo.nCooldown = time() + 26; -- 26 seconds since we have the glyph
-				break
-			else
-				nDemonic_SpellInfo.nCooldown = time() + 30; -- 30 seconds unglyphed
-			end
-		end
+	if (guid == UnitGUID("player") and eventType == "SPELL_CAST_SUCCESS" and spellName == nTeleport) then
+		nDemonic_SetCooldown(25);
 		nDemonic_SetMessage(2);
 	end
 end
@@ -191,33 +188,46 @@ function nDemonic:ZONE_CHANGED_NEW_AREA()
 	nDemonic_Clear();
 end
 
-local function nDemonic_OnUpdate(self, elapsed)
-	if (nDemonic_SpellInfo.nActive) then
-		if (nDemonic_SpellInfo.nFinished == time()) then
-			nDemonic_Clear();
-		else
-			if (nDemonic_InRange() and nDemonic_SpellInfo.nCooldown == 0) then
-				if (nDemonic_SpellInfo.nDispText and nDemonic_SpellInfo.nMessage ~= "Demonic Circle: In Range!") then
-					nDemonic_SetMessage(0);
-				end
-			elseif (nDemonic_SpellInfo.nDispText and nDemonic_SpellInfo.nMessage ~= "Demonic Circle: Out of Range!" and nDemonic_SpellInfo.nCooldown == 0) then
-				nDemonic_SetMessage(1);
-			end
-			if (nDemonic_SpellInfo.nCooldown > time()) then
-				if (nDemonic_SpellInfo.nDispText and nDemonic_SpellInfo.nMessage ~= "Demonic Circle: On Cooldown!") then
-					nDemonic_SetMessage(2);
-				end
-			elseif (nDemonic_SpellInfo.nCooldown == time()) then
-				nDemonic_SpellInfo.nCooldown = 0;
-				if (nDemonic_InRange() == true) then
-					nDemonic_SetMessage(0);
-				else
+function nDemonic_OnUpdate(self, elapsed)
+	nDemonic_TimeSinceLastUpdate = nDemonic_TimeSinceLastUpdate + elapsed;
+
+	while (nDemonic_TimeSinceLastUpdate > nDemonic_UpdateInterval) do
+		if (nDemonic_SpellInfo.nActive) then
+			if (nDemonic_SpellInfo.nFinished == time()) then
+				nDemonic_Clear();
+			else
+				if (nDemonic_InRange() and nDemonic_SpellInfo.nCooldown == 0) then
+					if (nDemonic_SpellInfo.nDispText and nDemonic_SpellInfo.nMessage ~= "Demonic Circle: In Range!") then
+						nDemonic_SetMessage(0);
+					end
+				elseif (nDemonic_SpellInfo.nDispText and nDemonic_SpellInfo.nMessage ~= "Demonic Circle: Out of Range!" and nDemonic_SpellInfo.nCooldown == 0) then
 					nDemonic_SetMessage(1);
+				end
+				if (nDemonic_SpellInfo.nCooldown > time()) then
+					if (nDemonic_SpellInfo.nDispText and nDemonic_SpellInfo.nMessage ~= "Demonic Circle: On Cooldown!") then
+						nDemonic_SetMessage(2);
+					end
+				elseif (nDemonic_SpellInfo.nCooldown == time()) then
+					nDemonic_SpellInfo.nCooldown = 0;
+					if (nDemonic_InRange() == true) then
+						nDemonic_SetMessage(0);
+					else
+						nDemonic_SetMessage(1);
+					end
 				end
 			end
 		end
+		nDemonic_TimeSinceLastUpdate = nDemonic_TimeSinceLastUpdate - nDemonic_UpdateInterval;
 	end
 end
+
+nDemonic_Help = {
+	"|cff00ffffnDemonic " ..GAME_VERSION_LABEL.. ":|r |cFF008B8B" ..NDEMONIC_VERSION.."|r",
+	"  |cFF008B8B/ndemonic reset|r" .. "   - |cff00ffffReset nDemonic to it's default settings.|r",
+	"  |cFF008B8B/ndemonic lock|r" .. "     - |cff00ffffLock nDemonic.|r",
+	"  |cFF008B8B/ndemonic unlock|r" .. " - |cff00ffffUnlock nDemonic|r",
+	"  |cFF008B8B/ndemonic tukui|r" .. "   - |cff00ffffEnable/disable Tukui support.|r",
+};
 
 SlashCmdList['NDEMONIC'] = function(arg)
 	if (arg == 'lock') then
@@ -230,8 +240,12 @@ SlashCmdList['NDEMONIC'] = function(arg)
 		else
 			nDemonic_Options.tukui = 0;
 		end
+	elseif (arg == 'reset') then
+		nDemonic_Reset();
 	else
-		DEFAULT_CHAT_FRAME:AddMessage("nDemonic: Options are lock and unlock.");
+		for _, msg in ipairs(nDemonic_Help) do
+			DEFAULT_CHAT_FRAME:AddMessage(msg);
+		end
 	end
 end
 SLASH_NDEMONIC1 = '/ndemonic'
