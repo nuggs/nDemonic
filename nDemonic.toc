@@ -1,7 +1,7 @@
-## Interface: 40000
+## Interface: 40200
 ## Title: nDemonic
 ## Author: Nuggs
-## Version: 0.1.4
+## Version: 0.1.7
 ## Notes: Are we in range of demonic circle?
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
