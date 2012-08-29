@@ -6,7 +6,7 @@
 	Still a simple script and still released in public domain.
 	Nuggs
 ]]--
-NDEMONIC_VERSION = "0.1.7"
+NDEMONIC_VERSION = "0.1.8"
 
 nDemonic_Options = {};
 local nDemonic_TimeSinceLastUpdate = 0;
@@ -24,7 +24,6 @@ StaticPopupDialogs["DISABLE_NDEMONIC"] = {
 
 local nTeleport = GetSpellInfo(48020);
 local nSummon = GetSpellInfo(48018);
-local T, C, L;
 
 local nDemonic_SpellInfo = {
 	nActive			= false,	-- do we have a portal up
@@ -42,14 +41,6 @@ local function nDemonic_InRange()
 		return false
 	else
 		return true
-	end
-end
-
-local function nDemonic_GetTukui()
-	if (IsAddOnLoaded("Tukui") and nDemonic_Options.tukui == 1) then
-		return true
-	else
-		return false
 	end
 end
 
@@ -122,17 +113,6 @@ local function nDemonic_Reset()
 	DEFAULT_CHAT_FRAME:AddMessage("|cFF008B8BnDemonic: |cff00ffffreset|r");
 end
 
-local function nDemonic_TukInit()
-	if (IsAddOnLoaded("Tukui") and nDemonic_Options.tukui == 1 or nDemonic_Options.tukui ==  nil) then
-		T, C, L = unpack(Tukui);
-
-		if (nDemonic_Options.tukui == nil) then T.Delay(3, function() print("nDemonic: Tukui support automatically enabled.") end) end
-		nDemonic_Options.tukui = 1;
-	else
-		nDemonic_Options.tukui = 0;
-	end
-end
-
 function nDemonic:ADDON_LOADED(name)
 	if (name == "nDemonic") then
 		if (nDemonic_Options.x == nil) then
@@ -158,7 +138,6 @@ function nDemonic:PLAYER_LOGIN()
 		nDemonic:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 		nDemonic:RegisterEvent("PLAYER_DEAD");
 		nDemonic:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-		nDemonic_TukInit();
 	else
 		StaticPopup_Show("DISABLE_NDEMONIC");
 	end
@@ -226,7 +205,6 @@ nDemonic_Help = {
 	"  |cFF008B8B/ndemonic reset|r" .. "   - |cff00ffffReset nDemonic to it's default settings.|r",
 	"  |cFF008B8B/ndemonic lock|r" .. "     - |cff00ffffLock nDemonic.|r",
 	"  |cFF008B8B/ndemonic unlock|r" .. " - |cff00ffffUnlock nDemonic|r",
-	"  |cFF008B8B/ndemonic tukui|r" .. "   - |cff00ffffEnable/disable Tukui support.|r",
 };
 
 SlashCmdList['NDEMONIC'] = function(arg)
@@ -234,12 +212,6 @@ SlashCmdList['NDEMONIC'] = function(arg)
 		nDemonic_Lock();
 	elseif (arg == 'unlock') then
 		nDemonic_Unlock();
-	elseif (arg == 'tukui') then
-		if (nDemonic_Options.tukui == 0) then
-			nDemonic_Options.tukui = 1;
-		else
-			nDemonic_Options.tukui = 0;
-		end
 	elseif (arg == 'reset') then
 		nDemonic_Reset();
 	else

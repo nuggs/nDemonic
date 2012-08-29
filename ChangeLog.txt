@@ -1,3 +1,8 @@
+08/29/2012
+	Removed TukUI based code, has to be rewritten for 5.x WoW.
+	Updated the version number to 0.1.8
+	Updated toc.
+
 10/18/2011
 	Fixed COMBAT_LOG_EVENT_UNFILTERED to have the correct arguments for 4.2.
 	Changed a few if statements in COMBAT_LOG_EVENT_UNFILTERED
